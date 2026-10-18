@@ -30,16 +30,6 @@ app.use(express.urlencoded({
     extended: true
 }));
 
-async function initialize() {
-    console.log('SKibidi')
-    
-
-
-}
-async function icon_resize() {
-
-}
-
 async function file_checker(data, expression, format, size, response) {
     const name = await NnidResolver._nameFromMiiDataBase64(data);
     const filePath = `./src/storage/miis/${name}-${data}/${expression}/icon-${size}.${format}`;
@@ -295,7 +285,6 @@ app.use((error, request, response, next) => {
 
 
 try {
-    await initialize();
     app.listen(LISTEN_PORT, '0.0.0.0', () => {
         console.log(`Server started on port ${LISTEN_PORT}.`);
     });
