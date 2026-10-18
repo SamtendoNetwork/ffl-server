@@ -45,6 +45,7 @@ async function file_checker(data, expression, format, size, response) {
     const filePath = `./src/storage/miis/${name}-${data}/${expression}/icon-${size}.${format}`;
 
     try {
+        await initialize();
         let fileBuffer = await fs.readFile(filePath);
         if (format === 'tga') {
             response.setHeader('Content-Type', 'image/x-tga');
