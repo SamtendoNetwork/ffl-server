@@ -29,16 +29,6 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
-async function initialize() {
-    console.log('SKibidi')
-    
-
-
-}
-async function icon_resize() {
-
-}
-
 
 async function file_checker(data, expression, format, size, response) {
     const name = await NnidResolver._nameFromMiiDataBase64(data);
