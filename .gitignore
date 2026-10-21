@@ -1,9 +1,2 @@
 node_modules/
-
-# FFL resource files
-*Res*.dat
-
-# Unwanted .d.ts definitions: examples, rolldown, emscripten
-dist/examples/*
-dist/*.config*
-dist/*emscripten*.d.*
+src/storage/
