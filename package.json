@@ -1,53 +1,26 @@
 {
-  "name": "ffl.js",
-  "version": "2.2.0",
-  "main": "ffl.js",
+  "name": "ffl-server",
+  "version": "1.0.1",
   "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "lint": "eslint",
-    "check-types": "tsc --noEmit",
-    "typedoc": "typedoc --skipErrorChecking ffl.js materials/* helpers/*",
-    "build:lint": "eslint ffl.js materials/*",
-    "build:types": "tsc",
-    "build:bundle": "rolldown -c rolldown.config.mjs",
-    "build": "npm run build:lint && npm run build:types && npm run build:bundle",
-    "prepublishOnly": "npm run build",
-    "closure": "google-closure-compiler --warning_level VERBOSE ffl.js --js_output_file ffl.min.js --language_in UNSTABLE --module_resolution NODE"
+    "start": "node src/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/Whatsauser/FFL_server/FFL.js.git"
+    "url": "git://github.com/SamtendoNetwork/ffl-server.git"
   },
   "author": "Whatsauser",
   "license": "AGPL-3.0-only",
-  "devDependencies": {
-    "@cdklabs/eslint-plugin": "^2.0.2",
-    "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1",
-    "@eslint/config-helpers": "^0.6.0",
-    "@eslint/js": "^9.37.0",
-    "@stylistic/eslint-plugin": "^3.1.0",
-    "@types/node": "^22.13.8",
-    "eslint": "^9.37.0",
-    "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-import-x": "^4.16.1",
-    "eslint-plugin-jsdoc": "^50.6.3",
-    "eslint-plugin-unicorn": "^61.0.2",
-    "globals": "^15.15.0",
-    "rolldown": "^1.0.0-rc.1",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
     "express": "^5.2.1",
-    "fs": "^0.0.1-security",
-    "gl": "^8.1.6",
-    "jimp": "^1.6.1",
+    "FFL.js": "github:Whatsauser/FFL.js",
     "morgan": "^1.11.0",
-    "mp4box": "^2.4.1",
     "opentype.js": "^2.0.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.3",
     "tga": "^1.0.7",
+    "three": "github:Whatsauser/three",
     "webgpu": "^0.4.0"
   }
 }
