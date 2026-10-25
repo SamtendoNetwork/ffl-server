@@ -68,7 +68,7 @@ app.get('/robots.txt', (req, res) => {
 });
 
 app.get('/miis/:format', async (request, response) => {
-    const data = request.query.mii_data || "AwEAQHIZNQJD5RJi34qIQZTDKo9tTgAAqlpTAE4AXwBTAGEAbQAAAAAAAAAAAGE0EJA+BzBpQxgzNEQQhhIPaA4AOCkAUkhQUwBhAG0AAAAAAAAAAAAAAAAAAAAAAM+F";
+    const data = request.query.data || "AwEAQHIZNQJD5RJi34qIQZTDKo9tTgAAqlpTAE4AXwBTAGEAbQAAAAAAAAAAAGE0EJA+BzBpQxgzNEQQhhIPaA4AOCkAUkhQUwBhAG0AAAAAAAAAAAAAAAAAAAAAAM+F";
     const expression = Number(request.query.expression) || 0;
     const render_type = request.query.type || 'face';
     const pid = request.query.pid || '1408486111'
