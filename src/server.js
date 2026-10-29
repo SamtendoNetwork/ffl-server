@@ -201,44 +201,50 @@ app.get('/mii/:pid/:format', async (request, response) => {
     const pid = request.params.pid || 1408486111
     const width = Number(request.query.width) || 96;
     let formatz = request.params.format || 'image.png'
-    let format = formatz
-    let expression = 0;
-    if (format.includes("png")) {
-        format = 'png'
+    let format
+    let expression = 0
+    let render_type
+
+    switch (true) {
+        case formatz.includes('jpeg') || formatz.includes('jpg'):
+            format = 'jpeg'
+            break
+        case formatz.includes('tga'):
+            format = 'tga'
+            break
+        case formatz.includes('png'):
+            format = 'png'
+            break
+        default:
+            return response.send('Format not valid')
     }
-    if (format.includes("tga")) {
-        format = 'tga'
-    }
-        if (format.includes("jpeg") || format.includes("jpg")) {
-        format = 'jpeg'
-    }
-    if (!format.includes("png") && !format.includes("tga") && !format.includes("jpeg")) {
-        return response.send('Format not valid')
-    }
-        if (formatz.includes("frustrated")) {
-        expression = 18
-    }
-    if (formatz.includes("wink")) {
-        expression = 13
-    }
-    if (formatz.includes("normal")) {
-        expression = 0
-    }
-    if (formatz.includes("smile_open_mouth")) {
-        expression = 7
-    }
-    if (formatz.includes("sorrow")) {
-        expression = 3
-    }
-    if (formatz.includes('puzzled')) {
-        expression = 18
-    }
-    if (formatz.includes("surprised_open_mouth")) {
-        expression = 10
-    }
-    if (formatz.includes("body")) {
-        expression = 0
-        render_type = 'whole_body'
+    
+    switch (true) {
+        case formatz.includes('body'):
+            expression = 0
+            render_type = 'whole_body'
+            break
+        case formatz.includes('surprised_open_mouth'):
+            expression = 10
+            break
+        case formatz.includes('puzzled'):
+            expression = 18
+            break
+        case formatz.includes('sorrow'):
+            expression = 3
+            break
+        case formatz.includes('smile_open_mouth'):
+            expression = 7
+            break
+        case formatz.includes('normal'):
+            expression = 0
+            break
+        case formatz.includes('wink'):
+            expression = 13
+            break
+        case formatz.includes('frustrated'):
+            expression = 18
+            break
     }
                if (pid) {
                 const miiDataz = await NnidResolver.miiFromPid(pid);
