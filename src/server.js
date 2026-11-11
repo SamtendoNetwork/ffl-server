@@ -5,14 +5,15 @@ import sharp from 'sharp';
 import { PNG } from 'pngjs';
 import TGA from 'tga';
 // Too lazy to add env file just for this
-const cache = true
+const cache = true;
 import { fileURLToPath } from 'node:url';
-import fs from 'node:fs/promises'
+import fs from 'node:fs/promises';
 import { main } from 'FFL.js/examples/nodejs-icon-body-webgpu.js';
 import NnidResolver from './utils/NnidResolver.mjs';
 process.title = 'MiiRender-server';
 const LISTEN_PORT = 7190;
 const app = express();
+
 // ESM replacement for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,9 +27,11 @@ app.set('subdomain offset', 1);
 console.log('Setting up Middleware');
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(express.urlencoded({
-    extended: true
-}));
+app.use(
+    express.urlencoded({
+        extended: true,
+    }),
+);
 
 async function file_checker(data, expression, format, size, response) {
     const name = await NnidResolver._nameFromMiiDataBase64(data);
@@ -38,234 +41,320 @@ async function file_checker(data, expression, format, size, response) {
         let fileBuffer = await fs.readFile(filePath);
         if (format === 'tga') {
             response.setHeader('Content-Type', 'image/x-tga');
-             
         } else {
             response.setHeader('Content-Type', `image/${format}`);
         }
         return fileBuffer;
-
-
     } catch (err) {
         if (err.code === 'ENOENT') {
             console.log(`File not found: ${filePath}. Will trigger generator.`);
-            return false; 
+            return false;
         }
-        throw err; 
+        throw err;
     }
 }
-
 
 console.log('Creating Clanker handler');
 // GET OFF MEH LAWN DIRTY CLANKER!
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
-    const robotsContent = [
-        'User-agent: *',
-        'Disallow: *',
-        '',
-    ].join('\n');
+    const robotsContent = ['User-agent: *', 'Disallow: *', ''].join('\n');
     res.send(robotsContent);
 });
 
 app.get('/miis/:format', async (request, response) => {
-    const data = request.query.data || "AwEAQHIZNQJD5RJi34qIQZTDKo9tTgAAqlpTAE4AXwBTAGEAbQAAAAAAAAAAAGE0EJA+BzBpQxgzNEQQhhIPaA4AOCkAUkhQUwBhAG0AAAAAAAAAAAAAAAAAAAAAAM+F";
+    const data =
+        request.query.data ||
+        'AwEAQHIZNQJD5RJi34qIQZTDKo9tTgAAqlpTAE4AXwBTAGEAbQAAAAAAAAAAAGE0EJA+BzBpQxgzNEQQhhIPaA4AOCkAUkhQUwBhAG0AAAAAAAAAAAAAAAAAAAAAAM+F';
     const expression = Number(request.query.expression) || 0;
     const render_type = request.query.type || 'face';
-    const pid = request.query.pid || '1408486111'
-    const username = request.query.username || 'SN_Sam'
+    const pid = request.query.pid || '1408486111';
+    const username = request.query.username || 'SN_Sam';
     const width = Number(request.query.width) || 96;
-    let format = request.params.format || 'image.png'
-    if (format.includes("png")) {
-        format = 'png'
+    let format = request.params.format || 'image.png';
+    if (format.includes('png')) {
+        format = 'png';
     }
-    if (format.includes("tga")) {
-        format = 'tga'
+    if (format.includes('tga')) {
+        format = 'tga';
     }
-        if (format.includes("jpeg") || format.includes("jpg")) {
-        format = 'jpeg'
+    if (format.includes('jpeg') || format.includes('jpg')) {
+        format = 'jpeg';
     }
-    if (!format.includes("png") && !format.includes("tga") && !format.includes("jpeg")) {
-        return response.send('Format not valid')
+    if (
+        !format.includes('png') &&
+        !format.includes('tga') &&
+        !format.includes('jpeg')
+    ) {
+        return response.send('Format not valid');
     }
     // Uses Mii Data to get Mii
     if (data) {
-        const check = await file_checker(data, expression, format, width, response)
-        if (check) return response.send(check)
+        const check = await file_checker(
+            data,
+            expression,
+            format,
+            width,
+            response,
+        );
+        if (check) return response.send(check);
         if (!check) {
-              const name = await NnidResolver._nameFromMiiDataBase64(data)
-      const MyMii = await main(data, render_type, expression, format, width, name)
-      if (!MyMii) {
-    console.log('server error')
-    return response.send('Server Error')
-}  if (format === 'tga') {
-     response.setHeader('Content-Type', `image/x-tga`)} else {
-        response.setHeader('Content-Type', `image/${format}`)
-     }
-            return response.send(MyMii);}
-
+            const name = await NnidResolver._nameFromMiiDataBase64(data);
+            const MyMii = await main(
+                data,
+                render_type,
+                expression,
+                format,
+                width,
+                name,
+            );
+            if (!MyMii) {
+                console.log('server error');
+                return response.send('Server Error');
+            }
+            if (format === 'tga') {
+                response.setHeader('Content-Type', `image/x-tga`);
+            } else {
+                response.setHeader('Content-Type', `image/${format}`);
+            }
+            return response.send(MyMii);
         }
+    }
 
-            // Uses account PID (Samtendo Network) to get Mii
-               if (pid) {
-                const miiDataz = await NnidResolver.miiFromPid(pid);
-                if (!miiDataz) {
-                    return response.send('Server Error')
-                }
-                    const check = await file_checker(miiDataz.miiData, expression, format, width, response)
-                            if (check) return response.send(check)
-                    if (!check) {
-                        const name = await NnidResolver._nameFromMiiDataBase64(miiDataz.miiData)
-                const MyMii = await main(miiDataz.miiData, render_type, expression, format, width, name)
-                                if (!MyMii) {
-                    return response.send('Server Error')
-                }
-                if (format === 'tga') {
-                     response.setHeader('Content-Type', `image/x-tga`)} else {
-                        response.setHeader('Content-Type', `image/${format}`)}
-                            return response.send(MyMii);}
-               } 
+    // Uses account PID (Samtendo Network) to get Mii
+    if (pid) {
+        const miiDataz = await NnidResolver.miiFromPid(pid);
+        if (!miiDataz) {
+            return response.send('Server Error');
+        }
+        const check = await file_checker(
+            miiDataz.miiData,
+            expression,
+            format,
+            width,
+            response,
+        );
+        if (check) return response.send(check);
+        if (!check) {
+            const name = await NnidResolver._nameFromMiiDataBase64(
+                miiDataz.miiData,
+            );
+            const MyMii = await main(
+                miiDataz.miiData,
+                render_type,
+                expression,
+                format,
+                width,
+                name,
+            );
+            if (!MyMii) {
+                return response.send('Server Error');
+            }
+            if (format === 'tga') {
+                response.setHeader('Content-Type', `image/x-tga`);
+            } else {
+                response.setHeader('Content-Type', `image/${format}`);
+            }
+            return response.send(MyMii);
+        }
+    }
 
-                // Uses SNID (Samtendo Network ID) to get Mii
-                              if (username) {
-                const pidz = await NnidResolver.pidFromUserId(username);
-                if (!pidz) {
-                    return response.send('Server Error')
-                }
-                const miiDataz = await NnidResolver.miiFromPid(pidz);
-                if (!miiDataz) {
-                    return response.send('Server Error')
-                }
-                const check = await file_checker(miiDataz.miiData, expression, format, width, response)
-                    if (check) return response.send(check)
-                    if (!check) {
-                        const name = await NnidResolver._nameFromMiiDataBase64(miiDataz.miiData)
-                const MyMii = await main(miiDataz.miiData, render_type, expression, format, width, name)
-                                if (!MyMii) {
-                    return response.send('Server Error')
-                }
-                if (format === 'tga') {
-                     response.setHeader('Content-Type', `image/x-tga`)} else {
-                        response.setHeader('Content-Type', `image/${format}`)}
-                            return response.send(MyMii);}
-               } 
-
-
+    // Uses SNID (Samtendo Network ID) to get Mii
+    if (username) {
+        const pidz = await NnidResolver.pidFromUserId(username);
+        if (!pidz) {
+            return response.send('Server Error');
+        }
+        const miiDataz = await NnidResolver.miiFromPid(pidz);
+        if (!miiDataz) {
+            return response.send('Server Error');
+        }
+        const check = await file_checker(
+            miiDataz.miiData,
+            expression,
+            format,
+            width,
+            response,
+        );
+        if (check) return response.send(check);
+        if (!check) {
+            const name = await NnidResolver._nameFromMiiDataBase64(
+                miiDataz.miiData,
+            );
+            const MyMii = await main(
+                miiDataz.miiData,
+                render_type,
+                expression,
+                format,
+                width,
+                name,
+            );
+            if (!MyMii) {
+                return response.send('Server Error');
+            }
+            if (format === 'tga') {
+                response.setHeader('Content-Type', `image/x-tga`);
+            } else {
+                response.setHeader('Content-Type', `image/${format}`);
+            }
+            return response.send(MyMii);
+        }
+    }
 });
 app.get('/miis/:username/:expression/:format', async (request, response) => {
     const expression = Number(request.params.expression) || 0;
     const render_type = request.query.type || 'face';
-    const username = request.params.username || 'SN_Sam'
+    const username = request.params.username || 'SN_Sam';
     const width = 96;
-    let format = request.params.format || 'image.png'
-    if (format.includes("png")) {
-        format = 'png'
+    let format = request.params.format || 'image.png';
+    if (format.includes('png')) {
+        format = 'png';
     }
-    if (format.includes("tga")) {
-        format = 'tga'
+    if (format.includes('tga')) {
+        format = 'tga';
     }
-        if (format.includes("jpeg") || format.includes("jpg")) {
-        format = 'jpeg'
+    if (format.includes('jpeg') || format.includes('jpg')) {
+        format = 'jpeg';
     }
-    if (!format.includes("png") && !format.includes("tga") && !format.includes("jpeg")) {
-        return response.send('Format not valid')
+    if (
+        !format.includes('png') &&
+        !format.includes('tga') &&
+        !format.includes('jpeg')
+    ) {
+        return response.send('Format not valid');
     }
 
-                // Uses SNID (Samtendo Network ID) to get Mii
-                              if (username) {
-                const pidz = await NnidResolver.pidFromUserId(username);
-                if (!pidz) {
-                    return response.send('Server Error')
-                }
-                const miiDataz = await NnidResolver.miiFromPid(pidz);
-                if (!miiDataz) {
-                    return response.send('Server Error')
-                }
-                const check = await file_checker(miiDataz.miiData, expression, format, width, response)
-                    if (check) return response.send(check)
-                    if (!check) {
-                        const name = await NnidResolver._nameFromMiiDataBase64(miiDataz.miiData)
-                const MyMii = await main(miiDataz.miiData, render_type, expression, format, width, name)
-                                if (!MyMii) {
-                    return response.send('Server Error')
-                }
-                if (format === 'tga') {
-                     response.setHeader('Content-Type', `image/x-tga`)} else {
-                        response.setHeader('Content-Type', `image/${format}`)}
-                            return response.send(MyMii);}
-               }  else {return response.send('no data sent')}
-
-
+    // Uses SNID (Samtendo Network ID) to get Mii
+    if (username) {
+        const pidz = await NnidResolver.pidFromUserId(username);
+        if (!pidz) {
+            return response.send('Server Error');
+        }
+        const miiDataz = await NnidResolver.miiFromPid(pidz);
+        if (!miiDataz) {
+            return response.send('Server Error');
+        }
+        const check = await file_checker(
+            miiDataz.miiData,
+            expression,
+            format,
+            width,
+            response,
+        );
+        if (check) return response.send(check);
+        if (!check) {
+            const name = await NnidResolver._nameFromMiiDataBase64(
+                miiDataz.miiData,
+            );
+            const MyMii = await main(
+                miiDataz.miiData,
+                render_type,
+                expression,
+                format,
+                width,
+                name,
+            );
+            if (!MyMii) {
+                return response.send('Server Error');
+            }
+            if (format === 'tga') {
+                response.setHeader('Content-Type', `image/x-tga`);
+            } else {
+                response.setHeader('Content-Type', `image/${format}`);
+            }
+            return response.send(MyMii);
+        }
+    } else {
+        return response.send('no data sent');
+    }
 });
 app.get('/mii/:pid/:format', async (request, response) => {
     let render_type = 'face';
-    const pid = request.params.pid || 1408486111
+    const pid = request.params.pid || 1408486111;
     const width = Number(request.query.width) || 96;
-    let formatz = request.params.format || 'image.png'
-    let format
-    let expression = 0
-    let render_type
+    let formatz = request.params.format || 'image.png';
+    let format;
+    let expression = 0;
 
     switch (true) {
         case formatz.includes('jpeg') || formatz.includes('jpg'):
-            format = 'jpeg'
-            break
+            format = 'jpeg';
+            break;
         case formatz.includes('tga'):
-            format = 'tga'
-            break
+            format = 'tga';
+            break;
         case formatz.includes('png'):
-            format = 'png'
-            break
+            format = 'png';
+            break;
         default:
-            return response.send('Format not valid')
+            return response.send('Format not valid');
     }
-    
+
     switch (true) {
         case formatz.includes('body'):
-            expression = 0
-            render_type = 'whole_body'
-            break
+            expression = 0;
+            render_type = 'whole_body';
+            break;
         case formatz.includes('surprised_open_mouth'):
-            expression = 10
-            break
+            expression = 10;
+            break;
         case formatz.includes('puzzled'):
-            expression = 18
-            break
+            expression = 18;
+            break;
         case formatz.includes('sorrow'):
-            expression = 3
-            break
+            expression = 3;
+            break;
         case formatz.includes('smile_open_mouth'):
-            expression = 7
-            break
+            expression = 7;
+            break;
         case formatz.includes('normal'):
-            expression = 0
-            break
+            expression = 0;
+            break;
         case formatz.includes('wink'):
-            expression = 13
-            break
+            expression = 13;
+            break;
         case formatz.includes('frustrated'):
-            expression = 18
-            break
+            expression = 18;
+            break;
     }
-               if (pid) {
-                const miiDataz = await NnidResolver.miiFromPid(pid);
-                if (!miiDataz) {
-                    return response.send('Server Error')
-                }
-                    const check = await file_checker(miiDataz.miiData, expression, format, width, response)
-                            if (check) return response.send(check)
-                    if (!check) {
-                        const name = await NnidResolver._nameFromMiiDataBase64(miiDataz.miiData)
-                const MyMii = await main(miiDataz.miiData, render_type, expression, format, width, name)
-                                if (!MyMii) {
-                    return response.send('Server Error')
-                }
-                if (format === 'tga') {
-                     response.setHeader('Content-Type', `image/x-tga`)} else {
-                        response.setHeader('Content-Type', `image/${format}`)}
-                            return response.send(MyMii);}
-               }   else {return response.send('no data sent')}
-
-
+    if (pid) {
+        const miiDataz = await NnidResolver.miiFromPid(pid);
+        if (!miiDataz) {
+            return response.send('Server Error');
+        }
+        const check = await file_checker(
+            miiDataz.miiData,
+            expression,
+            format,
+            width,
+            response,
+        );
+        if (check) return response.send(check);
+        if (!check) {
+            const name = await NnidResolver._nameFromMiiDataBase64(
+                miiDataz.miiData,
+            );
+            const MyMii = await main(
+                miiDataz.miiData,
+                render_type,
+                expression,
+                format,
+                width,
+                name,
+            );
+            if (!MyMii) {
+                return response.send('Server Error');
+            }
+            if (format === 'tga') {
+                response.setHeader('Content-Type', `image/x-tga`);
+            } else {
+                response.setHeader('Content-Type', `image/${format}`);
+            }
+            return response.send(MyMii);
+        }
+    } else {
+        return response.send('no data sent');
+    }
 });
 // 404 handler
 console.log('Creating 404 status handler');
@@ -273,22 +362,21 @@ app.use(async (request, response) => {
     return response.status(404).json({
         app: 'api',
         status: 404,
-        error: 'Route not found'
+        error: 'Route not found',
     });
 });
 
 // non-404 error handler
 console.log('Creating non-404 status handler');
-app.use((error, request, response, next) => { 
-    console.log(error)
+app.use((error, request, response, next) => {
+    console.log(error);
     response.status(500);
     return response.json({
         app: 'api',
         status: 500,
-        error: 'Internal server error'
+        error: 'Internal server error',
     });
 });
-
 
 try {
     app.listen(LISTEN_PORT, '0.0.0.0', () => {
